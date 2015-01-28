@@ -504,26 +504,23 @@ public class ConversionHelper
 		return personName;
 	}
 
-	public static void populatePersonName(Person person, PersonName personName) {
-		String lastName = personName.getLastName();
-		if (lastName != null) {
-			lastName = lastName.toUpperCase();
-		}
-		String firstName = personName.getFirstName();
-		if (firstName != null) {
-			firstName = firstName.toUpperCase();
-		}
-		person.setGivenName(firstName);
-		person.setFamilyName(lastName);
+	public static void populatePersonName(final Person person, final PersonName personName) {
+		person.setGivenName(toUpperCase(personName.getFirstName()));
+		person.setMiddleName(toUpperCase(personName.getSecondName()));
+		person.setFamilyName(toUpperCase(personName.getLastName()));
 		person.setPrefix(personName.getPrefix());
 		person.setSuffix(personName.getSuffix());
 		person.setDegree(personName.getDegree());
 		
 		if (personName.getNameTypeCode() != null) {
-			NameType nameType = new NameType();
+			final NameType nameType = new NameType();
 			nameType.setNameTypeCode(personName.getNameTypeCode());
 			person.setNameType(nameType);
 		}
+	}
+	
+	private final static String toUpperCase(final String s) {
+	    return (s == null) ? null : s.toUpperCase();
 	}
 
 
