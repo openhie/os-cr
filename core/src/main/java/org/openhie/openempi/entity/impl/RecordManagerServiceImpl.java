@@ -156,7 +156,7 @@ public class RecordManagerServiceImpl extends RecordCommonServiceImpl implements
 			return record;
 		} catch (Exception e) {
             log.error("Failed while adding a record: " + e, e);
-			throw new ApplicationException(e.getMessage());
+			throw new ApplicationException(e);
 		}
 	}
 
@@ -240,7 +240,7 @@ public class RecordManagerServiceImpl extends RecordCommonServiceImpl implements
             return savedRecords;
         } catch (Exception e) {
             log.error("Failed while adding a record: " + e, e);
-            throw new ApplicationException(e.getMessage());
+            throw new ApplicationException(e);
         }
     }
 
@@ -288,7 +288,7 @@ public class RecordManagerServiceImpl extends RecordCommonServiceImpl implements
 			return record;
 		} catch (Exception e) {
             log.error("Failed while importing a record: " + e, e);
-			throw new ApplicationException(e.getMessage());
+			throw new ApplicationException(e);
 		}
 	}
 
@@ -335,7 +335,7 @@ public class RecordManagerServiceImpl extends RecordCommonServiceImpl implements
             return savedRecords;
         } catch (Exception e) {
             log.error("Failed while importing a set of records: " + e, e);
-            throw new ApplicationException(e.getMessage());
+            throw new ApplicationException(e);
         }
     }
 
@@ -370,7 +370,7 @@ public class RecordManagerServiceImpl extends RecordCommonServiceImpl implements
 			link = getEntityDao().saveRecordLink(link);
 			return link;
 		} catch (Exception e) {
-			throw new ApplicationException(e.getMessage());
+			throw new ApplicationException(e);
 		}
 	}
 
@@ -422,7 +422,7 @@ public class RecordManagerServiceImpl extends RecordCommonServiceImpl implements
 
 			return link;
 		} catch (Exception e) {
-			throw new ApplicationException(e.getMessage());
+			throw new ApplicationException(e);
 		}
 	}
 
@@ -446,7 +446,7 @@ public class RecordManagerServiceImpl extends RecordCommonServiceImpl implements
         try {
             getEntityDao().removeRecordLink(link);
         } catch (Exception e) {
-            throw new ApplicationException(e.getMessage());
+            throw new ApplicationException(e);
         }
     }
 
@@ -528,7 +528,7 @@ public class RecordManagerServiceImpl extends RecordCommonServiceImpl implements
 
 			return record;
 		} catch (Exception e) {
-			throw new ApplicationException(e.getMessage());
+			throw new ApplicationException(e);
 		}
 	}
 
@@ -564,7 +564,7 @@ public class RecordManagerServiceImpl extends RecordCommonServiceImpl implements
 
 			return record;
 		} catch (Exception e) {
-			throw new ApplicationException(e.getMessage());
+			throw new ApplicationException(e);
 		}
 	}
 
