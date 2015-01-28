@@ -133,11 +133,12 @@ public class ConversionHelper
 		return person;
 	}
 	
-	public static Patient getPatient(Person person) {
-		Patient patient = new Patient();
+	public static Patient getPatient(final Person person) {
+		final Patient patient = new Patient();
 		patient.setBirthPlace(person.getBirthPlace());
-		if (person.getBirthOrder() != null)
+		if (person.getBirthOrder() != null) {
 			patient.setBirthOrder(person.getBirthOrder().intValue());
+		}
 		patient.setDeathIndicator(person.getDeathInd());
 		if (person.getNationality() != null) {
 			patient.setCitizenship(person.getNationality().getNationalityCode());
@@ -156,7 +157,7 @@ public class ConversionHelper
 			patient.setAdministrativeSex(sexType);
 		}
 		if (person.getDateOfBirth() != null) {
-			Calendar calendar = Calendar.getInstance();
+		    final Calendar calendar = Calendar.getInstance();
 			calendar.setTime(person.getDateOfBirth());
 			patient.setBirthDateTime(calendar);
 		}
@@ -170,15 +171,17 @@ public class ConversionHelper
 		if (person.getEthnicGroup() != null) {
 			patient.setEthnicGroup(person.getEthnicGroup().getEthnicGroupCode());
 		}
-		if (person.getMothersMaidenName() != null) {
-			PersonName maidenName = new PersonName();
-			maidenName.setLastName(person.getMothersMaidenName());
+		final String mothersMaidenName = person.getMothersMaidenName(), mothersName = person.getMotherName();
+		if (mothersMaidenName != null || mothersName != null) {
+		    final PersonName maidenName = new PersonName();
+			maidenName.setLastName(mothersMaidenName);
+			maidenName.setFirstName(mothersName);
 //			maidenName.setNameTypeCode(MAIDEN_NAME_NAME_TYPE_CODE);
 			maidenName.setNameTypeCode(LEGAL_NAME_NAME_TYPE_CODE);
 			patient.setMothersMaidenName(maidenName);			
 		}
 		if (person.getAccount() != null) {
-			PatientIdentifier accountIdentifier = new PatientIdentifier();
+		    final PatientIdentifier accountIdentifier = new PatientIdentifier();
 			accountIdentifier.setId(person.getAccount());
 			if (person.getAccountIdentifierDomain() != null) {
 				Identifier accountDomain = new Identifier(person.getAccountIdentifierDomain().getNamespaceIdentifier(), 
@@ -189,32 +192,32 @@ public class ConversionHelper
 		}
 		patient.addAddress(getAddress(person));
 		patient.addPhoneNumber(getPhoneNumber(person));
-		for (PersonIdentifier identifier : person.getPersonIdentifiers()) {
+		for (final PersonIdentifier identifier : person.getPersonIdentifiers()) {
 			patient.addPatientId(ConversionHelper.getPatientIdentifier(identifier));
 		}
 		log.trace("Converted object: " + person + " to " + patient);
 		return patient;
 	}
 
-	public static Person getPerson(Patient patient) {
-		Person person = new Person();
+	public static Person getPerson(final Patient patient) {
+	    final Person person = new Person();
 		person.setBirthOrder(Integer.valueOf(patient.getBirthOrder()));
 		person.setBirthPlace(patient.getBirthPlace());
 		person.setDeathInd(patient.getDeathIndicator());
 		if (patient.getCitizenship() != null) {
-			Nationality nationality = new Nationality();
+		    final Nationality nationality = new Nationality();
 			nationality.setNationalityCode(patient.getCitizenship());
 			person.setNationality(nationality);
 		}
 		if (patient.getPrimaryLanguage() != null) {
-			Language language = new Language();
+		    final Language language = new Language();
 			language.setLanguageCode(patient.getPrimaryLanguage());
 			person.setLanguage(language);
 		}
 		populatePersonName(person, patient.getPatientName());
 		person.setSsn(patient.getSsn());
 		if (patient.getAdministrativeSex() != null) {
-			Gender gender = new Gender();
+		    final Gender gender = new Gender();
 			gender.setGenderCode(patient.getAdministrativeSex().getCDAValue());
 			person.setGender(gender);
 		}
@@ -222,12 +225,12 @@ public class ConversionHelper
 			person.setDateOfBirth(patient.getBirthDateTime().getTime());
 		}
 		if (patient.getRace() != null) {
-			Race race = new Race();
+		    final Race race = new Race();
 			race.setRaceCode(getOpenEmpiRaceCode(patient.getRace()));
 			person.setRace(race);
 		}
 		if (patient.getReligion() != null) {
-			Religion religion = new Religion();
+		    final Religion religion = new Religion();
 			religion.setReligionCode(patient.getReligion());
 			person.setReligion(religion);
 		}
@@ -235,12 +238,12 @@ public class ConversionHelper
 			person.setMaritalStatusCode(patient.getMaritalStatus().substring(0,1));
 		}
 		if (patient.getEthnicGroup() != null) {
-			EthnicGroup ethnicGroup = new EthnicGroup();
+		    final EthnicGroup ethnicGroup = new EthnicGroup();
 			ethnicGroup.setEthnicGroupCode(patient.getEthnicGroup());
 			person.setEthnicGroup(ethnicGroup);
 		}
 		if (patient.getAddresses() != null && patient.getAddresses().size() > 0) {
-			Address address = patient.getAddresses().get(0);
+		    final Address address = patient.getAddresses().get(0);
 			person.setAddress1(address.getAddLine1());
 			person.setAddress2(address.getAddLine2());
 			person.setCity(address.getAddCity());
@@ -249,7 +252,7 @@ public class ConversionHelper
 			person.setCountry(address.getAddCountry());
 		}
 		if (patient.getPhoneNumbers() != null && patient.getPhoneNumbers().size() > 0) {
-			PhoneNumber number = patient.getPhoneNumbers().get(0);
+		    final PhoneNumber number = patient.getPhoneNumbers().get(0);
 			person.setPhoneAreaCode(number.getAreaCode());
 			person.setPhoneCountryCode(number.getCountryCode());
 			person.setPhoneNumber(number.getNumber());
@@ -259,29 +262,28 @@ public class ConversionHelper
 			}
 		}
 		if (patient.getPatientAccountNumber() != null) {
-			PatientIdentifier accountIdentifier = patient.getPatientAccountNumber();
+			final PatientIdentifier accountIdentifier = patient.getPatientAccountNumber();
 			person.setAccount(accountIdentifier.getId());
 			if (accountIdentifier.getAssigningAuthority() != null &
 					(accountIdentifier.getAssigningAuthority().getNamespaceId() != null ||
 					 accountIdentifier.getAssigningAuthority().getUniversalId() != null ||
 					 accountIdentifier.getAssigningAuthority().getUniversalIdType() != null)) {
-				IdentifierDomain accountDomain = new IdentifierDomain();
+			    final IdentifierDomain accountDomain = new IdentifierDomain();
 				accountDomain.setNamespaceIdentifier(accountIdentifier.getAssigningAuthority().getNamespaceId());
 				accountDomain.setUniversalIdentifier(accountIdentifier.getAssigningAuthority().getUniversalId());
 				accountDomain.setUniversalIdentifierTypeCode(accountIdentifier.getAssigningAuthority().getUniversalIdType());
 				person.setAccountIdentifierDomain(accountDomain);
 			}
 		}
-		if (patient.getMothersMaidenName() != null) {
-			person.setMothersMaidenName(patient.getMothersMaidenName().getLastName());
+		final PersonName mothersMaidenName = patient.getMothersMaidenName();
+		if (mothersMaidenName != null) {
+			person.setMothersMaidenName(mothersMaidenName.getLastName());
+			person.setMotherName(mothersMaidenName.getFirstName());
 		}
 		if (patient.getPatientIds() != null) {
 			for (PatientIdentifier pid : patient.getPatientIds()) {
 				person.addPersonIdentifier(getPersonIdentifier(pid));
 			}
-		}
-		if (patient.getMothersMaidenName() != null) {
-			person.setMothersMaidenName(patient.getMothersMaidenName().getLastName());
 		}
 		log.trace("Converted object: " + patient + " to " + person);
 		return person;
