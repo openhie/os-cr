@@ -44,26 +44,29 @@ public class PixManagerAdapter extends BasePixPdqAdapter implements IPixManagerA
         super();
     }
     
+    @Override
     public List<PatientIdentifier> createPatient(Patient patient, MessageHeader armessageHeader1) throws PixManagerException {
-        Person person = ConversionHelper.getPerson(patient);
+        final Person person = ConversionHelper.getPerson(patient);
         
-        Person personAdded;
+        final Person originalPerson = readPerson(getId(person));
+        if (originalPerson != null) {
+            return patient.getPatientIds();
+        }
+        
+        final Person personAdded;
         try {
-            SecurityHelper.getSessionKey();
             personAdded = Context.getPersonManagerService().addPerson(person);
-        } catch (Exception e) {
+        } catch (final ApplicationException e) {
             // If the person already exists then ignore the error
-            if (e instanceof ApplicationException) {
-                return patient.getPatientIds();
-            }
-            throw new PixManagerException(e);
+            return patient.getPatientIds();
         }
         
         //Find the updated matching list for PIX Update Notification
-        List<PatientIdentifier> matching = getPatientIds(personAdded);
+        final List<PatientIdentifier> matching = getPatientIds(personAdded);
         return matching;
     }
 
+    @Override
     public List<List<PatientIdentifier>> mergePatients(Patient patientMain, Patient otherPatient, MessageHeader header)
             throws PixManagerException {
         List<List<PatientIdentifier>> ret = new ArrayList<List<PatientIdentifier>>();
@@ -103,29 +106,37 @@ public class PixManagerAdapter extends BasePixPdqAdapter implements IPixManagerA
         }
         return ret;
     }
+    
+    private PersonIdentifier getId(final Person person) {
+        return person.getPersonIdentifiers().iterator().next();
+    }
+    
+    private Person readPerson(final PersonIdentifier id) throws PixManagerException {
+        try {
+            SecurityHelper.getSessionKey();
+            return Context.getPersonQueryService().findPersonById(id);
+        } catch (final Exception e) {
+            throw new PixManagerException(e);
+        }
+    }
 
+    @Override
     public List<List<PatientIdentifier>> updatePatient(Patient patient, MessageHeader messageHeader) throws PixManagerException {
-        List<List<PatientIdentifier>> ret = new ArrayList<List<PatientIdentifier>>();
+        final List<List<PatientIdentifier>> ret = new ArrayList<List<PatientIdentifier>>();
         
-        Person person = ConversionHelper.getPerson(patient);
+        final Person person = ConversionHelper.getPerson(patient);
         
-        PatientIdentifier patientId = patient.getPatientIds().get(0);
-        List<PatientIdentifier> oldMatching = findPatientIds(patientId, messageHeader);
+        final PatientIdentifier patientId = patient.getPatientIds().get(0);
+        final List<PatientIdentifier> oldMatching = findPatientIds(patientId, messageHeader);
         
         //1. find the original matching patient
         // TODO: Need to check that there is at least one identifier provided here but
         // for now the assumption is that the generic PIX code will do the validation before it forwards the
         // request to the adaptor.
         //
-        PersonIdentifier id = person.getPersonIdentifiers().iterator().next();
+        final PersonIdentifier id = getId(person);
         
-        Person originalPerson;
-        try {
-            SecurityHelper.getSessionKey();
-            originalPerson = Context.getPersonQueryService().findPersonById(id);
-        } catch (Exception e) {
-            throw new PixManagerException(e);
-        }
+        final Person originalPerson = readPerson(id);
         
         if (originalPerson == null) {
             log.warn("Unable to find the patient to be updated using the identifier: "  + id);
@@ -137,13 +148,13 @@ public class PixManagerAdapter extends BasePixPdqAdapter implements IPixManagerA
         //2. Update Patient
         try {
             Context.getPersonManagerService().updatePerson(originalPerson);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new PixManagerException(e);
         }
         
-        List<PatientIdentifier> newMatching = findPatientIds(patientId, messageHeader);
-        List<PatientIdentifier> unmatching = new ArrayList<PatientIdentifier>();
-        for (PatientIdentifier oldPid : oldMatching) {
+        final List<PatientIdentifier> newMatching = findPatientIds(patientId, messageHeader);
+        final List<PatientIdentifier> unmatching = new ArrayList<PatientIdentifier>();
+        for (final PatientIdentifier oldPid : oldMatching) {
             if (!newMatching.contains(oldPid)) {
                 unmatching.add(oldPid);
             }                   
@@ -210,6 +221,7 @@ public class PixManagerAdapter extends BasePixPdqAdapter implements IPixManagerA
         return false;
     }
     
+    @Override
     public List<PatientIdentifier> findPatientIds(PatientIdentifier identifier, MessageHeader messageHeader)
             throws PixManagerException {
 
@@ -242,6 +254,7 @@ public class PixManagerAdapter extends BasePixPdqAdapter implements IPixManagerA
         return ret;
     }
 
+    @Override
     public boolean isValidPatient(PatientIdentifier patientIdentifier, MessageHeader messageHeader) throws PixManagerException {
         try {
             SecurityHelper.getSessionKey();
