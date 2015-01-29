@@ -209,11 +209,7 @@ public class ConversionHelper
 			nationality.setNationalityCode(patient.getCitizenship());
 			person.setNationality(nationality);
 		}
-		if (patient.getPrimaryLanguage() != null) {
-		    final Language language = new Language();
-			language.setLanguageCode(patient.getPrimaryLanguage());
-			person.setLanguage(language);
-		}
+		person.setLanguage(patient.getPrimaryLanguage());
 		populatePersonName(person, patient.getPatientName());
 		person.setSsn(patient.getSsn());
 		if (patient.getAdministrativeSex() != null) {
@@ -350,41 +346,40 @@ public class ConversionHelper
 		return phoneType;
 	}
 
-	private static org.openhealthtools.openexchange.datamodel.SharedEnums.PhoneType getMisysPhoneType(PhoneType type) {
-		if (type == null || type.getPhoneTypeCode() == null) {
+	private final static org.openhealthtools.openexchange.datamodel.SharedEnums.PhoneType getMisysPhoneType(final PhoneType type) {
+	    final String code = (type == null) ? null : type.getPhoneTypeCode();
+		if (code == null) {
 			return org.openhealthtools.openexchange.datamodel.SharedEnums.PhoneType.UNKNOWN; 
-		} else if (type.getPhoneTypeCode().equalsIgnoreCase(PHONE_TYPE_CODE_CELL)) {
+		} else if (code.equalsIgnoreCase(PHONE_TYPE_CODE_CELL)) {
 			return org.openhealthtools.openexchange.datamodel.SharedEnums.PhoneType.CELL;
-		} else if (type.getPhoneTypeCode().equalsIgnoreCase(PHONE_TYPE_CODE_EMERGENCY)) {
+		} else if (code.equalsIgnoreCase(PHONE_TYPE_CODE_EMERGENCY)) {
 			return org.openhealthtools.openexchange.datamodel.SharedEnums.PhoneType.EMERGENCY;
-		} else if (type.getPhoneTypeCode().equalsIgnoreCase(PHONE_TYPE_CODE_FAX)) {
+		} else if (code.equalsIgnoreCase(PHONE_TYPE_CODE_FAX)) {
 			return org.openhealthtools.openexchange.datamodel.SharedEnums.PhoneType.FAX;
-		} else if (type.getPhoneTypeCode().equalsIgnoreCase(PHONE_TYPE_CODE_HOME)) {
+		} else if (code.equalsIgnoreCase(PHONE_TYPE_CODE_HOME)) {
 			return org.openhealthtools.openexchange.datamodel.SharedEnums.PhoneType.HOME;
-		} else if (type.getPhoneTypeCode().equalsIgnoreCase(PHONE_TYPE_CODE_PRIMARY_HOME)) {
+		} else if (code.equalsIgnoreCase(PHONE_TYPE_CODE_PRIMARY_HOME)) {
 			return org.openhealthtools.openexchange.datamodel.SharedEnums.PhoneType.PRIMARY_HOME;
-		} else if (type.getPhoneTypeCode().equalsIgnoreCase(PHONE_TYPE_CODE_VACATION_HOME)) {
+		} else if (code.equalsIgnoreCase(PHONE_TYPE_CODE_VACATION_HOME)) {
 			return org.openhealthtools.openexchange.datamodel.SharedEnums.PhoneType.VACATION_HOME;
-		} else if (type.getPhoneTypeCode().equalsIgnoreCase(PHONE_TYPE_CODE_SERVICE)) {
+		} else if (code.equalsIgnoreCase(PHONE_TYPE_CODE_SERVICE)) {
 			return org.openhealthtools.openexchange.datamodel.SharedEnums.PhoneType.SERVICE;
-		} else if (type.getPhoneTypeCode().equalsIgnoreCase(PHONE_TYPE_CODE_UNKNOWN)) {
+		} else if (code.equalsIgnoreCase(PHONE_TYPE_CODE_UNKNOWN)) {
 			return org.openhealthtools.openexchange.datamodel.SharedEnums.PhoneType.UNKNOWN;
-		} else if (type.getPhoneTypeCode().equalsIgnoreCase(PHONE_TYPE_CODE_WORK)) {
+		} else if (code.equalsIgnoreCase(PHONE_TYPE_CODE_WORK)) {
 			return org.openhealthtools.openexchange.datamodel.SharedEnums.PhoneType.WORK;
 		} else {
 			return org.openhealthtools.openexchange.datamodel.SharedEnums.PhoneType.UNKNOWN;
 		}
 	}
 	
-	private static PhoneNumber getPhoneNumber(Person person) {
-		PhoneNumber number = new PhoneNumber();
+	private final static PhoneNumber getPhoneNumber(final Person person) {
+	    final PhoneNumber number = new PhoneNumber();
 		number.setAreaCode(person.getPhoneAreaCode());
 		number.setCountryCode(person.getPhoneCountryCode());
 		number.setExtension(person.getPhoneExt());
 		number.setNumber(person.getPhoneNumber());
-		if (person.getPhoneType() != null) {
-			number.setType(getMisysPhoneType(person.getPhoneType()));
-		}
+		number.setType(getMisysPhoneType(person.getPhoneType()));
 		return number;
 	}
 

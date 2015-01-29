@@ -396,6 +396,14 @@ public class Person extends BaseObject implements java.io.Serializable
 	public void setLanguage(Language language) {
 		this.language = language;
 	}
+	
+	public void setLanguage(final String primaryLanguage) {
+	    if (primaryLanguage != null) {
+            final Language language = new Language();
+            language.setLanguageCode(primaryLanguage);
+            person.setLanguage(language);
+        }
+	}
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "religion_cd")

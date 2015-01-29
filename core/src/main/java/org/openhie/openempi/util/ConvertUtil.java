@@ -175,26 +175,23 @@ public final class ConvertUtil
      * @param rb a resource bundle
      * @return a populated object
      */
-    public static Object populateObject(Object obj, ResourceBundle rb) {
+    public static Object populateObject(final Object obj, final ResourceBundle rb) {
         try {
-            Map<String, String> map = convertBundleToMap(rb);
-            BeanUtils.copyProperties(obj, map);
-        } catch (Exception e) {
-            e.printStackTrace();
-            log.error("Exception occurred populating object: " + e.getMessage());
+            BeanUtils.copyProperties(obj, convertBundleToMap(rb));
+        } catch (final Exception e) {
+            log.error("Exception occurred populating object", e);
         }
 
         return obj;
     }
 
-    public static Object cloneBean(Object obj) {
-    		Object clone = null;
+    public static Object cloneBean(final Object obj) {
 			try {
-				clone = BeanUtils.cloneBean(obj);
-			} catch (Exception e) {
-				log.warn("Unable to clone object: " + obj + ". Error: " + e, e);
+				return BeanUtils.cloneBean(obj);
+			} catch (final Exception e) {
+				log.warn("Unable to clone object: " + obj, e);
 			}
-    		return clone;
+    		return null;
     }
 
     public static List<String> extractProperties(Object obj) {
@@ -253,33 +250,33 @@ public final class ConvertUtil
 		return sb.toString().toUpperCase();
 	}
 
-	public static void serializeObject(String configDirectory, String fileName, Object o) {
-		String fullFilename = configDirectory + "/" + fileName;
+	public static void serializeObject(final String configDirectory, final String fileName, final Object o) {
+	    final String fullFilename = configDirectory + "/" + fileName;
 		log.debug("Attempting to serialize object into file: " + fullFilename);
 		try {
-			ObjectOutputStream ois = new ObjectOutputStream(
+		    final ObjectOutputStream ois = new ObjectOutputStream(
 					new BufferedOutputStream(new FileOutputStream(fullFilename)));
 			ois.writeObject(o);
 			ois.flush();
 			ois.close();
-		} catch (Exception e) {
-			log.error("Failed while serializing object (into the file" + fullFilename + " ): " + e.getMessage(), e);
-			throw new RuntimeException("Failed while serializing object (into the file" + fullFilename + " ): " + e.getMessage());
+		} catch (final Exception e) {
+			log.error("Failed while serializing object (into the file" + fullFilename + " )", e);
+			throw new RuntimeException("Failed while serializing object (into the file" + fullFilename + " )", e);
 		}
 	}
 
-	public static Object deserializeObject(String configDirectory, String fileName) {
-		Object obj;
-		String fullFilename = configDirectory + "/" + fileName;
+	public static Object deserializeObject(final String configDirectory, final String fileName) {
+	    final Object obj;
+	    final String fullFilename = configDirectory + "/" + fileName;
 		log.debug("Attempting to deserialize object from file: " + fullFilename);
 		try {
-			ObjectInputStream ois = new ObjectInputStream(
+		    final ObjectInputStream ois = new ObjectInputStream(
 					new BufferedInputStream(new FileInputStream(fullFilename)));
 			obj = ois.readObject();
 			ois.close();
-		} catch (Exception e) {
-			log.error("Failed while deserializing object (from file " + fullFilename + "): " + e.getMessage(), e);
-			throw new RuntimeException("Failed while deserializing object (from file " + fullFilename + "): " + e.getMessage());
+		} catch (final Exception e) {
+			log.error("Failed while deserializing object (from file " + fullFilename + ")", e);
+			throw new RuntimeException("Failed while deserializing object (from file " + fullFilename + ")", e);
 		}
 		return obj;
 	}
@@ -762,24 +759,24 @@ public final class ConvertUtil
 		}
 		try {
 			method.invoke(entityInstance, value);
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			log.warn("Unable to set the value of attribute " + fieldName + " to a value " + value + 
-					" of type " + value.getClass());
+					" of type " + value.getClass(), e);
 		}
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static Method getMethod(Class theClass, String fieldName, Class paramClass) {
+	public final static Method getMethod(final Class theClass, final String fieldName, final Class paramClass) {
 		Method method = methodByFieldName.get(fieldName);
 		if (method != null) {
 			return method;
 		}
-		String methodName = getMethodName(fieldName);
+		final String methodName = getMethodName(fieldName);
 		try {
 			method = theClass.getDeclaredMethod(methodName, paramClass);
 			methodByFieldName.put(fieldName, method);
-		} catch (Exception e) {
-			log.warn("Unable to field entity method for setting field " + fieldName + " to a value of type " + paramClass);
+		} catch (final Exception e) {
+			log.warn("Unable to field entity method for setting field " + fieldName + " to a value of type " + paramClass, e);
 			return null;
 		}
 		return method;
