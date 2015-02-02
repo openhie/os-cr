@@ -398,7 +398,9 @@ public class Person extends BaseObject implements java.io.Serializable
 	}
 	
 	public void setLanguage(final String primaryLanguage) {
-	    if (primaryLanguage != null) {
+	    if (primaryLanguage == null) {
+            this.language = null;
+        } else {
             final Language language = new Language();
             language.setLanguageCode(primaryLanguage);
             person.setLanguage(language);
