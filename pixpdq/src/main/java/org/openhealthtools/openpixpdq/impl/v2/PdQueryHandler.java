@@ -1315,8 +1315,12 @@ class PdQueryHandler extends BaseHandler implements Application {
      * @throws DataTypeException When the name cannot be encoded into valid HL7
      */
     private void populateXPN(XPN xpn, PersonName patientName) throws DataTypeException, PatientException {
-        if ((patientName.getFirstName() == null) && (patientName.getSecondName() == null) && (patientName.getLastName() == null))
+        /*
+        // We have test cases for infants registered with no name
+        if ((patientName.getFirstName() == null) && (patientName.getSecondName() == null) && (patientName.getLastName() == null)) {
             throwPatientException("Patient has no name.");
+        }
+        */
         if (patientName.getFirstName() != null) xpn.getGivenName().setValue(patientName.getFirstName());
         if (patientName.getSecondName() != null) xpn.getSecondAndFurtherGivenNamesOrInitialsThereof().setValue(patientName.getSecondName());
         if (patientName.getLastName() != null) xpn.getFamilyName().getSurname().setValue(patientName.getLastName());
@@ -1459,16 +1463,10 @@ class PdQueryHandler extends BaseHandler implements Application {
    }
 
 
-	/**
-	 * Throws a new patient exception and log it as well.
-	 *
-	 * @param message the exception message to log
-	 * @throws PatientException containing the given message
-	 */
-	private void throwPatientException(String message) throws PatientException {
+	/*private void throwPatientException(String message) throws PatientException {
 	    log.error(message);
 	    throw new PatientException(message);
-	}
+	}*/
 	
 	/* 
 	 * Whether to handle Pagination (or Continuation Query) by OpenPIXPDQ or EMPI. 
