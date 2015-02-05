@@ -21,6 +21,7 @@
 package org.openhie.openempi.openpixpdqadapter;
 
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 
 import org.apache.commons.logging.Log;
@@ -36,7 +37,6 @@ import org.openhealthtools.openpixpdq.api.PdqQuery;
 import org.openhie.openempi.model.EthnicGroup;
 import org.openhie.openempi.model.Gender;
 import org.openhie.openempi.model.IdentifierDomain;
-import org.openhie.openempi.model.Language;
 import org.openhie.openempi.model.NameType;
 import org.openhie.openempi.model.Nationality;
 import org.openhie.openempi.model.Person;
@@ -104,9 +104,7 @@ public class ConversionHelper
 			gender.setGenderCode(query.getSex().getCDAValue());
 			person.setGender(gender);
 		}
-		if (query.getBirthDate() != null) {
-			person.setDateOfBirth(query.getBirthDate().getTime());
-		}
+		person.setDateOfBirth(toDate(query.getBirthDate()));
 		if (query.getAddress() != null ) {
 			populateAddress(person, query.getAddress());
 		}
@@ -156,11 +154,8 @@ public class ConversionHelper
 			}
 			patient.setAdministrativeSex(sexType);
 		}
-		if (person.getDateOfBirth() != null) {
-		    final Calendar calendar = Calendar.getInstance();
-			calendar.setTime(person.getDateOfBirth());
-			patient.setBirthDateTime(calendar);
-		}
+		patient.setBirthDateTime(toCalendar(person.getDateOfBirth()));
+		patient.setDeathDate(toCalendar(person.getDeathTime()));
 		if (person.getRace() != null) {
 			patient.setRace(getPixPdqRaceCode(person.getRace().getRaceCode()));
 		}
@@ -198,8 +193,22 @@ public class ConversionHelper
 		log.trace("Converted object: " + person + " to " + patient);
 		return patient;
 	}
+	
+	private static Calendar toCalendar(final Date d) {
+	    if (d == null) {
+	        return null;
+	    }
+	    final Calendar c = Calendar.getInstance();
+        c.setTime(d);
+        return c;
+	}
 
 	public static Person getPerson(final Patient patient) {
+	    /*
+	    For inserts, this output of this pretty much passes directly to the database code.
+	    For updates, we read the existing Person and then copy fields from this Person into the original.
+	    So PixManagerAdapter.updatePersonAttributes needs to support the same fields as this method.
+	    */
 	    final Person person = new Person();
 		person.setBirthOrder(Integer.valueOf(patient.getBirthOrder()));
 		person.setBirthPlace(patient.getBirthPlace());
@@ -217,9 +226,8 @@ public class ConversionHelper
 			gender.setGenderCode(patient.getAdministrativeSex().getCDAValue());
 			person.setGender(gender);
 		}
-		if (patient.getBirthDateTime() != null) {
-			person.setDateOfBirth(patient.getBirthDateTime().getTime());
-		}
+		person.setDateOfBirth(toDate(patient.getBirthDateTime()));
+		person.setDeathTime(toDate(patient.getDeathDate()));
 		if (patient.getRace() != null) {
 		    final Race race = new Race();
 			race.setRaceCode(getOpenEmpiRaceCode(patient.getRace()));
@@ -283,6 +291,10 @@ public class ConversionHelper
 		}
 		log.trace("Converted object: " + patient + " to " + person);
 		return person;
+	}
+	
+	private static Date toDate(final Calendar c) {
+	    return (c == null) ? null : c.getTime();
 	}
 
 	private static String getOpenEmpiRaceCode(String race) {

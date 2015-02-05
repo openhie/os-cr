@@ -173,22 +173,69 @@ public class PixManagerAdapter extends BasePixPdqAdapter implements IPixManagerA
         return ret;
     }
 
-    private void updatePersonAttributes(Person originalPerson, Person person) {
+    private void updatePersonAttributes(final Person originalPerson, final Person person) {
+        if (person.getBirthOrder() != null) {
+            originalPerson.setBirthOrder(person.getBirthOrder());
+        }
+        if (isPopulated(person.getBirthPlace())) {
+            originalPerson.setBirthPlace(person.getBirthPlace());
+        }
+        if (isPopulated(person.getDeathInd())) {
+            originalPerson.setDeathInd(person.getDeathInd());
+        }
+        if (person.getNationality() != null) {
+            originalPerson.setNationality(person.getNationality());
+        }
+        if (person.getLanguage() != null) {
+            originalPerson.setLanguage(person.getLanguage());
+        }
         if (isPopulated(person.getGivenName())) {
             originalPerson.setGivenName(person.getGivenName());
+        }
+        if (isPopulated(person.getMiddleName())) {
+            originalPerson.setMiddleName(person.getMiddleName());
         }
         if (isPopulated(person.getFamilyName())) {
             originalPerson.setFamilyName(person.getFamilyName());
         }
+        if (isPopulated(person.getPrefix())) {
+            originalPerson.setPrefix(person.getPrefix());
+        }
+        if (isPopulated(person.getSuffix())) {
+            originalPerson.setSuffix(person.getSuffix());
+        }
+        if (isPopulated(person.getDegree())) {
+            originalPerson.setDegree(person.getDegree());
+        }
+        if (isPopulated(person.getSsn())) {
+            originalPerson.setSsn(person.getSsn());
+        }
         if (isPopulated(person.getDateOfBirth())) {
             originalPerson.setDateOfBirth(person.getDateOfBirth());
         }
+        if (isPopulated(person.getDeathTime())) {
+            originalPerson.setDeathTime(person.getDeathTime());
+        }
         if (person.getGender() != null) {
-            
             originalPerson.setGender(person.getGender());
+        }
+        if (person.getRace() != null) {
+            originalPerson.setRace(person.getRace());
+        }
+        if (person.getReligion() != null) {
+            originalPerson.setReligion(person.getReligion());
+        }
+        if (isPopulated(person.getMaritalStatusCode())) {
+            originalPerson.setMaritalStatusCode(person.getMaritalStatusCode());
+        }
+        if (person.getEthnicGroup() != null) {
+            originalPerson.setEthnicGroup(person.getEthnicGroup());
         }
         if (isPopulated(person.getAddress1())) {
             originalPerson.setAddress1(person.getAddress1());
+        }
+        if (isPopulated(person.getAddress2())) {
+            originalPerson.setAddress2(person.getAddress2());
         }
         if (isPopulated(person.getCity())) {
             originalPerson.setCity(person.getCity());
@@ -199,22 +246,46 @@ public class PixManagerAdapter extends BasePixPdqAdapter implements IPixManagerA
         if (isPopulated(person.getPostalCode())) {
             originalPerson.setPostalCode(person.getPostalCode());
         }
+        if (isPopulated(person.getCountry())) {
+            originalPerson.setCountry(person.getCountry());
+        }
         if (isPopulated(person.getPhoneAreaCode())) {
             originalPerson.setPhoneAreaCode(person.getPhoneAreaCode());
         }
+        if (isPopulated(person.getPhoneCountryCode())) {
+            originalPerson.setPhoneCountryCode(person.getPhoneCountryCode());
+        }
         if (isPopulated(person.getPhoneNumber())) {
             originalPerson.setPhoneNumber(person.getPhoneNumber());
+            if (person.getPhoneType() != null) {
+                originalPerson.setPhoneType(person.getPhoneType());
+            }
+        }
+        if (isPopulated(person.getPhoneExt())) {
+            originalPerson.setPhoneExt(person.getPhoneExt());
+        }
+        if (isPopulated(person.getAccount())) {
+            originalPerson.setAccount(person.getAccount());
+            if (person.getAccountIdentifierDomain() != null) {
+                originalPerson.setAccountIdentifierDomain(person.getAccountIdentifierDomain());
+            }
+        }
+        if (isPopulated(person.getMothersMaidenName())) {
+            originalPerson.setMothersMaidenName(person.getMothersMaidenName());
+        }
+        if (isPopulated(person.getMotherName())) {
+            originalPerson.setMotherName(person.getMotherName());
         }
     }
 
-    private boolean isPopulated(String field) {
+    private boolean isPopulated(final String field) {
         if (field != null && field.length() > 0) {
             return true;
         }
         return false;
     }
     
-    private boolean isPopulated(java.util.Date field) {
+    private boolean isPopulated(final java.util.Date field) {
         if (field != null && field.toString().length() > 0) {
             return true;
         }
