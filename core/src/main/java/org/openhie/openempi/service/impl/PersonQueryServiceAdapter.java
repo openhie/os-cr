@@ -99,7 +99,7 @@ public class PersonQueryServiceAdapter extends BaseServiceImpl implements Person
 			
 			Identifier recordIdentifier = ConvertUtil.buildIdentifier(identifier);
 			List<Record> records = recordQueryService.findRecordsByIdentifier(getEntity(), recordIdentifier);	
-			List<Person> persons = new java.util.ArrayList<Person>();
+			List<Person> persons = new ArrayList<Person>();
 			for (Record record : records) {
 				// convert Record to Person
 				Person personInstance = ConvertUtil.getPersonFromRecord(personDao, record);
@@ -124,7 +124,7 @@ public class PersonQueryServiceAdapter extends BaseServiceImpl implements Person
 			
 			List<Record> records = recordQueryService.findRecordsByIdentifier(getEntity(), recordIdentifier);	
 			
-			List<Person> persons = new java.util.ArrayList<Person>();
+			List<Person> persons = new ArrayList<Person>();
 			for (Record record : records) {
 				// convert Record to Person
 				Person personInstance = ConvertUtil.getPersonFromRecord(personDao, record);
@@ -195,7 +195,7 @@ public class PersonQueryServiceAdapter extends BaseServiceImpl implements Person
 			}
 			
 			List<Record> records = recordQueryService.loadAllRecordsPaged(getEntity(), theRecord, firstRecord, maxRecords);			
-			List<Person> persons = new java.util.ArrayList<Person>();
+			List<Person> persons = new ArrayList<Person>();
 			for (Record record : records) {
 				// convert Record to Person
 				Person personInstance = ConvertUtil.getPersonFromRecord(personDao, record);
@@ -212,7 +212,7 @@ public class PersonQueryServiceAdapter extends BaseServiceImpl implements Person
 			List<RecordLink> recordLinks = recordQueryService.loadRecordLinks(getEntity(), RecordLinkState.POSSIBLE_MATCH, 0, 0);	
 			
 			RecordLink record;
-			List<ReviewRecordPair> reviewRecordPairs = new java.util.ArrayList<ReviewRecordPair>();
+			List<ReviewRecordPair> reviewRecordPairs = new ArrayList<ReviewRecordPair>();
 			for (RecordLink recordLink : recordLinks) {				
 				record = recordQueryService.loadRecordLink(getEntity(), recordLink.getRecordLinkId());
 				
@@ -231,7 +231,7 @@ public class PersonQueryServiceAdapter extends BaseServiceImpl implements Person
 			List<RecordLink> recordLinks = recordQueryService.loadRecordLinks(getEntity(), RecordLinkState.POSSIBLE_MATCH, 0, maxResults);
 			
 			RecordLink record;
-			List<ReviewRecordPair> reviewRecordPairs = new java.util.ArrayList<ReviewRecordPair>();
+			List<ReviewRecordPair> reviewRecordPairs = new ArrayList<ReviewRecordPair>();
 			for (RecordLink recordLink : recordLinks) {				
 					
 				record = recordQueryService.loadRecordLink(getEntity(), recordLink.getRecordLinkId());
@@ -261,25 +261,23 @@ public class PersonQueryServiceAdapter extends BaseServiceImpl implements Person
 		return null;
 	}
 
-	public List<Person> findPersonsByAttributes(Person person) {
-
-		ValidationService validationService = Context.getValidationService();
+	public List<Person> findPersonsByAttributes(final Person person) {
+	    final ValidationService validationService = Context.getValidationService();
 		validationService.validate(person);
 		
-		if( getEntity() != null && person != null ) {			
+		if (getEntity() != null && person != null) {			
 			// convert Person to Record
-			Record theRecord = ConvertUtil.getRecordFromPersonForSearch(getEntity(), person);
+		    final Record theRecord = ConvertUtil.getRecordFromPersonForSearch(getEntity(), person);
 			if (theRecord == null) {
 				return null;
 			}
 			
-			List<Record> records = recordQueryService.findRecordsByAttributes(getEntity(), theRecord);			
-			List<Person> persons = new java.util.ArrayList<Person>();
-			for (Record record : records) {
+			final List<Record> records = recordQueryService.findRecordsByAttributes(getEntity(), theRecord);			
+			final List<Person> persons = new ArrayList<Person>();
+			for (final Record record : records) {
 				// convert Record to Person
-				Person personInstance = ConvertUtil.getPersonFromRecord(personDao, record);
-				persons.add(personInstance);
-			}				
+				persons.add(ConvertUtil.getPersonFromRecord(personDao, record));
+			}
 			return persons;
 		}		
 		return null;
@@ -387,7 +385,7 @@ public class PersonQueryServiceAdapter extends BaseServiceImpl implements Person
 
 	public List<PersonLink> getPersonLinksByLinkSource(Integer linkSourceId) {  
         if (linkSourceId == null) {
-            return new java.util.ArrayList<PersonLink>();
+            return new ArrayList<PersonLink>();
         }	    	    
         List<PersonLink> personLinks = new ArrayList<PersonLink>();              
         if (getEntity() != null) {        
@@ -433,7 +431,7 @@ public class PersonQueryServiceAdapter extends BaseServiceImpl implements Person
 			}
 			
 			List<Record> records = recordQueryService.findRecordsByAttributes(getEntity(), theRecord, firstResult, maxResults);			
-			List<Person> persons = new java.util.ArrayList<Person>();
+			List<Person> persons = new ArrayList<Person>();
 			for (Record record : records) {
 				// convert Record to Person
 				Person personInstance = ConvertUtil.getPersonFromRecord(personDao, record);

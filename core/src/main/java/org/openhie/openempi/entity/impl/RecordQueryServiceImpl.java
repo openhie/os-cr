@@ -48,14 +48,13 @@ public class RecordQueryServiceImpl extends RecordCommonServiceImpl implements R
     public RecordQueryServiceImpl() {
     }
 
-    public List<Record> findRecordsByAttributes(Entity entity, Record record) {
-        Entity entityDef = getEntityDefinition(entity);
+    public List<Record> findRecordsByAttributes(final Entity entity, final Record record) {
+        final Entity entityDef = getEntityDefinition(entity);
         if (entityDef == null) {
             return new ArrayList<Record>();
         }
 
-        boolean criteriaSpecified = validateCriteriaPresent(record);
-        if (!criteriaSpecified) {
+        if (!validateCriteriaPresent(record)) {
             log.debug("Attempted to query the system without specifying any criteria.");
             return new ArrayList<Record>();
         }

@@ -613,19 +613,19 @@ public class EntityDaoOrientdb implements EntityDao
         }
     }
 
-    public List<Record> findRecordsByAttributes(Entity entity, Record record) {
-        Map<String, Object> params = new HashMap<String, Object>();
-        String query = QueryGenerator.generateQueryFromRecord(entity, record, params);
+    public List<Record> findRecordsByAttributes(final Entity entity, final Record record) {
+        final Map<String, Object> params = new HashMap<String, Object>();
+        final String query = QueryGenerator.generateQueryFromRecord(entity, record, params);
         OrientGraph db = null;
-        EntityStore entityStore = getEntityStoreByName(entity.getName());
+        final EntityStore entityStore = getEntityStoreByName(entity.getName());
         try {
             db = connect(entityStore);
-            List<ODocument> result = db.getRawGraph().command(new OSQLSynchQuery<ODocument>(query)).execute(params);
+            final List<ODocument> result = db.getRawGraph().command(new OSQLSynchQuery<ODocument>(query)).execute(params);
             if (result == null || result.size() == 0) {
                 return new ArrayList<Record>();
             }
             return OrientdbConverter.convertODocumentToRecord(getEntityCacheManager(), entity, result);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             log.error("Failed while trying to query the system using entity: " + entityStore.getEntityName()
                     + " due to " + e, e);
             return new ArrayList<Record>();

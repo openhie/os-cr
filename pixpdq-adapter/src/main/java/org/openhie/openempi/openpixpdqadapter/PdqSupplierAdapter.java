@@ -42,13 +42,13 @@ public class PdqSupplierAdapter extends BasePixPdqAdapter implements IPdSupplier
 	}
 	
 	@Override
-	public PdqResult findPatients(PdqQuery query, MessageHeader header) throws PdSupplierException {
-		Person personTemplate = ConversionHelper.getPerson(query);
+	public PdqResult findPatients(final PdqQuery query, final MessageHeader header) throws PdSupplierException {
+	    final Person personTemplate = ConversionHelper.getPerson(query);
 		try {
 			SecurityHelper.getSessionKey();
-			List<List<Patient>> allPatients = new ArrayList<List<Patient>>();
+			final List<List<Patient>> allPatients = new ArrayList<List<Patient>>();
 			
-			List<Person> persons = null;
+			final List<Person> persons;
 			// If the caller provides identifiers to use in the query, then search using the identifiers else use the attributes
 			if (personTemplate.getPersonIdentifiers().size() > 0) {
 				persons = Context.getPersonQueryService().findPersonsById(personTemplate.getPersonIdentifiers().iterator().next());
@@ -60,10 +60,10 @@ public class PdqSupplierAdapter extends BasePixPdqAdapter implements IPdSupplier
 				return new PdqResult(allPatients);
 			}
 
-			List<Person> uniquePersons = new ArrayList<Person>();
-			for (int i=0; i < persons.size(); i++) {
-				Person person = Context.getPersonQueryService().loadPerson(persons.get(i).getPersonId());
-				Person uniquePerson = findLinkedPersonInList(person, uniquePersons);
+			final List<Person> uniquePersons = new ArrayList<Person>();
+			for (int i = 0; i < persons.size(); i++) {
+			    final Person person = Context.getPersonQueryService().loadPerson(persons.get(i).getPersonId());
+			    final Person uniquePerson = findLinkedPersonInList(person, uniquePersons);
 				if (uniquePerson != null) {
 					addPersonIdentifiersToUniquePerson(person.getPersonIdentifiers(), uniquePerson);
 				} else {
@@ -71,10 +71,10 @@ public class PdqSupplierAdapter extends BasePixPdqAdapter implements IPdSupplier
 				}
 			}
 
-			//Converts to Patients
-			for (Person person : uniquePersons) {
-				List<Patient> patients = new ArrayList<Patient>();
-				Patient patient = ConversionHelper.getPatient(person);
+			// Converts to Patients
+			for (final Person person : uniquePersons) {
+			    final List<Patient> patients = new ArrayList<Patient>();
+				final Patient patient = ConversionHelper.getPatient(person);
 				patients.add(patient);
 				allPatients.add(patients);
 			}
