@@ -806,13 +806,13 @@ class PdQueryHandler extends BaseHandler implements Application {
     * @return the {@link PdqQuery} object
     */
     private PdqQuery processQuery(HashMap<String, String> parameters) throws PixPdqException {
-        PdqQuery ret = new PdqQuery();
-       try {
-           ret.setPrefix( Configuration.getPropertySetValue(connection, "QueryProperties", "WildcardBefore", false) );
-           ret.setSuffix( Configuration.getPropertySetValue(connection, "QueryProperties", "WildcardAfter", false) );
-       } catch (IheConfigurationException e) {
-           throw new PixPdqException(e);
-       }
+        final PdqQuery ret = new PdqQuery();
+        try {
+            ret.setPrefix(Configuration.getPropertySetValue(connection, "QueryProperties", "WildcardBefore", false));
+            ret.setSuffix(Configuration.getPropertySetValue(connection, "QueryProperties", "WildcardAfter", false));
+        } catch (final IheConfigurationException e) {
+            throw new PixPdqException(e);
+        }
         Address address = null;
         PhoneNumber phone = null;        
         PersonName personName = null;
@@ -821,121 +821,101 @@ class PdQueryHandler extends BaseHandler implements Application {
         PatientIdentifier patientAccountNumber = null;
         PatientIdentifier patientIdentifier = null;
         
-        Set<String> keys = parameters.keySet();
-        for (String key : keys) {
-            String value = parameters.get( key );
+        final Set<String> keys = parameters.keySet();
+        for (final String key : keys) {
+            final String value = parameters.get(key);
             // PID-3 - Patient Identifier List
             if (key.equalsIgnoreCase("@PID.3.1")) {
-            	if (patientIdentifier==null) patientIdentifier = new PatientIdentifier();
+            	patientIdentifier = initIdentifier(patientIdentifier);
             	patientIdentifier.setId(value);
-            }
-            else if(key.equalsIgnoreCase("@PID.3.4")) {
-            	if (patientIdentifier==null) patientIdentifier = new PatientIdentifier();
-            	patientIdentifier.setAssigningAuthority(new Identifier(value,null,null));
-            }
-            else if(key.equalsIgnoreCase("@PID.3.4.1")) {
-            	if (patientIdentifier==null) patientIdentifier = new PatientIdentifier();
-            	Identifier aa = patientIdentifier.getAssigningAuthority();
-            	if (aa == null) {
-            		aa = new Identifier(value, null, null);
-            	} else {
-            		aa.setNamespaceId(value);
-            	}
+            } else if (key.equalsIgnoreCase("@PID.3.4") || key.equalsIgnoreCase("@PID.3.4.1")) {
+                patientIdentifier = initIdentifier(patientIdentifier);
+            	final Identifier aa = initId(patientIdentifier.getAssigningAuthority());
+            	aa.setNamespaceId(value);
             	patientIdentifier.setAssigningAuthority(aa);
-            }
-            else if(key.equalsIgnoreCase("@PID.3.4.2")) {
-            	if (patientIdentifier==null) patientIdentifier = new PatientIdentifier();
-            	Identifier aa = patientIdentifier.getAssigningAuthority();
-            	if (aa == null) {
-            		aa = new Identifier(null, value, null);
-            	} else {
-            		aa.setUniversalId(value);
-            	}
+            } else if (key.equalsIgnoreCase("@PID.3.4.2")) {
+                patientIdentifier = initIdentifier(patientIdentifier);
+            	final Identifier aa = initId(patientIdentifier.getAssigningAuthority());
+            	aa.setUniversalId(value);
             	patientIdentifier.setAssigningAuthority(aa);
-            }
-            else if(key.equalsIgnoreCase("@PID.3.4.3")) {
-            	if (patientIdentifier==null) patientIdentifier = new PatientIdentifier();
-            	Identifier aa = patientIdentifier.getAssigningAuthority();
-            	if (aa == null) {
-            		aa = new Identifier(null, null, value);
-            	} else {
-            		aa.setUniversalIdType(value);
-            	}
+            } else if (key.equalsIgnoreCase("@PID.3.4.3")) {
+                patientIdentifier = initIdentifier(patientIdentifier);
+            	final Identifier aa = initId(patientIdentifier.getAssigningAuthority());
+            	aa.setUniversalIdType(value);
             	patientIdentifier.setAssigningAuthority(aa);
-            }
-            else if(key.equalsIgnoreCase("@PID.3.5")) {
-            	if (patientIdentifier==null) patientIdentifier = new PatientIdentifier();
+            } else if (key.equalsIgnoreCase("@PID.3.5")) {
+                patientIdentifier = initIdentifier(patientIdentifier);
             	patientIdentifier.setIdentifierTypeCode(value);
-            }
-            else if(key.equalsIgnoreCase("@PID.3.6")) {
-            	if (patientIdentifier==null) patientIdentifier = new PatientIdentifier();
-            	patientIdentifier.setAssigningFacility(new Identifier(value,null,null));           
+            } else if (key.equalsIgnoreCase("@PID.3.6")) {
+                patientIdentifier = initIdentifier(patientIdentifier);
+            	patientIdentifier.setAssigningFacility(new Identifier(value, null, null));           
             }
            // PID-5 - Patient Name
             /*Subcomponents for Family Name (FN): 
              * <Surname (ST)> & <Own Surname Prefix (ST)> & <Own
              * Surname (ST)> & <Surname Prefix From Partner/Spouse (ST)> & <Surname From
              * Partner/Spouse (ST)> */
-            else if (key.equalsIgnoreCase("@PID.5.1") ||
-            		 key.equalsIgnoreCase("@PID.5.1.1")) {
-            	if (personName == null) personName = new PersonName();
+            else if (key.equalsIgnoreCase("@PID.5.1") || key.equalsIgnoreCase("@PID.5.1.1")) {
+                personName = initName(personName);
             	personName.setLastName(value);            
-            }
-            else if (key.equalsIgnoreCase("@PID.5.2")) {
-            	if (personName == null) personName = new PersonName();
+            } else if (key.equalsIgnoreCase("@PID.5.2")) {
+                personName = initName(personName);
             	personName.setFirstName(value);
-            }
-            else if (key.equalsIgnoreCase("@PID.5.3")) {
-            	if (personName == null) personName = new PersonName();
+            } else if (key.equalsIgnoreCase("@PID.5.3")) {
+                personName = initName(personName);
             	personName.setSecondName(value);
-            }
-            else if (key.equalsIgnoreCase("@PID.5.4")) {
-            	if (personName == null) personName = new PersonName();
+            } else if (key.equalsIgnoreCase("@PID.5.4")) {
+                personName = initName(personName);
             	personName.setSuffix(value);
-            }
-            else if (key.equalsIgnoreCase("@PID.5.5")) {
-            	if (personName == null) personName = new PersonName();
+            } else if (key.equalsIgnoreCase("@PID.5.5")) {
+                personName = initName(personName);
             	personName.setPrefix(value);
-            }
-            else if (key.equalsIgnoreCase("@PID.5.6")) {
-            	if (personName == null) personName = new PersonName();
+            } else if (key.equalsIgnoreCase("@PID.5.6")) {
+            	personName = initName(personName);
             	personName.setDegree(value);
             }
             // PID-6 - Maiden Name
             else if (key.equalsIgnoreCase("@PID.6.1") ) {
-            	if (maidenName == null) maidenName = new PersonName();
+                maidenName = initName(maidenName);
             	maidenName.setLastName(value);
-            }
-            else if (key.equalsIgnoreCase("@PID.6.2")) {
-            	if (maidenName == null) maidenName = new PersonName();
+            } else if (key.equalsIgnoreCase("@PID.6.2")) {
+                maidenName = initName(maidenName);
             	maidenName.setFirstName(value);
-            }
-            else if (key.equalsIgnoreCase("@PID.6.3")) {
-            	if (maidenName == null) maidenName = new PersonName();
+            } else if (key.equalsIgnoreCase("@PID.6.3")) {
+                maidenName = initName(maidenName);
             	maidenName.setSecondName(value);
-            }
-            else if (key.equalsIgnoreCase("@PID.6.4")) {
-            	if (maidenName == null) maidenName = new PersonName();
+            } else if (key.equalsIgnoreCase("@PID.6.4")) {
+                maidenName = initName(maidenName);
             	maidenName.setSuffix(value);
-            }
-            else if (key.equalsIgnoreCase("@PID.6.5")) {
-            	if (maidenName == null) maidenName = new PersonName();
+            } else if (key.equalsIgnoreCase("@PID.6.5")) {
+            	maidenName = initName(maidenName);
             	maidenName.setPrefix(value);
             }
             // PID-7 - Birth date
-            	
-            else if (key.equalsIgnoreCase("@PID.7.1") )  {
+            else if (key.equalsIgnoreCase("@PID.7") || key.equalsIgnoreCase("@PID.7.1")) {
                 try {
                     String birthdateFormat = HL7v25.birhtdateFormat;
                     String formatFromProperty = Configuration.getPropertySetValue(connection, "DateTimeFormat", "Birthdate", false);
                     if (StringUtil.goodString(formatFromProperty)) {
                         birthdateFormat = formatFromProperty;
                     }
-                    Calendar birthdate = DateUtil.parseCalendar(value, birthdateFormat);
-                    ret.setBirthDate(birthdate);
-                } catch (IheConfigurationException e) {
+                    final int precision = (value == null) ? 0 : value.length();
+                    final String formatted;
+                    if (precision == 4) {
+                        formatted = value + "0101";
+                    } else if (precision == 6) {
+                        formatted = value + "01";
+                    } else {
+                        formatted = value;
+                    }
+                    Calendar c = DateUtil.parseCalendar(formatted, birthdateFormat);
+                    if (precision == 4 || precision == 6) {
+                        c = new ImpreciseCalendar(c, precision);
+                    }
+                    ret.setBirthDate(c);
+                } catch (final IheConfigurationException e) {
                     throw new PixPdqException(e);
-                } catch (ParseException e) {
+                } catch (final ParseException e) {
                     throw new PixPdqException(e);
                 }
             }
@@ -943,159 +923,142 @@ class PdQueryHandler extends BaseHandler implements Application {
             else if (key.equalsIgnoreCase("@PID.8"))
                ret.setSex(SharedEnums.SexType.getByString(value));
             // PID-11 - Address
-            else if (key.equalsIgnoreCase("@PID.11.1") || 
-            		 key.equalsIgnoreCase("@PID.11.1.1") ) {
-                if (address == null ) address = new Address();
-                address.setAddLine1( value );
-            }
-            else if (key.equalsIgnoreCase("@PID.11.2")) {
-                if (address == null ) address = new Address();
-                address.setAddLine2( value );
-            }
-            else if (key.equalsIgnoreCase("@PID.11.3")) {
-                if (address == null ) address = new Address();
-                address.setAddCity( value );
-            }
-            else if (key.equalsIgnoreCase("@PID.11.4")) {
-                if (address == null ) address = new Address();
-                address.setAddState( value );
-            }
-            else if (key.equalsIgnoreCase("@PID.11.5")) {
-                if (address == null ) address = new Address();
+            else if (key.equalsIgnoreCase("@PID.11.1") || key.equalsIgnoreCase("@PID.11.1.1")) {
+                address = initAddress(address);
+                address.setAddLine1(value);
+            } else if (key.equalsIgnoreCase("@PID.11.2")) {
+                address = initAddress(address);
+                address.setAddLine2(value);
+            } else if (key.equalsIgnoreCase("@PID.11.3")) {
+                address = initAddress(address);
+                address.setAddCity(value);
+            } else if (key.equalsIgnoreCase("@PID.11.4")) {
+                address = initAddress(address);
+                address.setAddState(value);
+            } else if (key.equalsIgnoreCase("@PID.11.5")) {
+                address = initAddress(address);
                 address.setAddZip( value );
-            }
-            else if (key.equalsIgnoreCase("@PID.11.6")) {
-                if (address == null ) address = new Address();
-                address.setAddCountry( value );
-            }
-            else if (key.equalsIgnoreCase("@PID.11.9")) {
-                if (address == null ) address = new Address();
-                address.setAddCounty( value );
+            } else if (key.equalsIgnoreCase("@PID.11.6")) {
+                address = initAddress(address);
+                address.setAddCountry(value);
+            } else if (key.equalsIgnoreCase("@PID.11.9")) {
+                address = initAddress(address);
+                address.setAddCounty(value);
             }
             // PID-14 - Phone Number
 //Commented out, there is no specific format for this field
 //            else if (key.equalsIgnoreCase("@PID.14.1")) {
-//                if (phone == null) phone = new PhoneNumber(SharedEnums.PhoneType.WORK);
-//                phone.setNumber( value );
+//                phone = initPhone(phone, SharedEnums.PhoneType.WORK);
+//                phone.setNumber(value);
 //            }
             else if (key.equalsIgnoreCase("@PID.14.5")) {
-                if (phone == null) phone = new PhoneNumber(SharedEnums.PhoneType.WORK);
-                phone.setCountryCode( value );
-            }
-            else if (key.equalsIgnoreCase("@PID.14.6")) {
-                if (phone == null) phone = new PhoneNumber(SharedEnums.PhoneType.WORK);
-                phone.setAreaCode( value );
-            }
-            else if (key.equalsIgnoreCase("@PID.14.1")) {
-                if (phone == null) phone = new PhoneNumber(SharedEnums.PhoneType.WORK);
-                phone.setNumber( value );
-            }
-           else if (key.equalsIgnoreCase("@PID.14.8")) {
-                if (phone == null) phone = new PhoneNumber(SharedEnums.PhoneType.WORK);
-                phone.setExtension( value );
-            }
-            else if (key.equalsIgnoreCase("@PID.14.9")) {
-                if (phone == null) phone = new PhoneNumber(SharedEnums.PhoneType.WORK);
-                phone.setNote( value );
-            }
-            else if (key.equalsIgnoreCase("@PID.13.5")) {
-                if (phone == null) phone = new PhoneNumber(SharedEnums.PhoneType.HOME);
-                phone.setCountryCode( value );
-            }
-            else if (key.equalsIgnoreCase("@PID.13.6")) {
-                if (phone == null) phone = new PhoneNumber(SharedEnums.PhoneType.HOME);
-                phone.setAreaCode( value );
-            }
-            else if (key.equalsIgnoreCase("@PID.13.1")) {
-                if (phone == null) phone = new PhoneNumber(SharedEnums.PhoneType.HOME);
-                phone.setNumber( value );
-            }
-            else if (key.equalsIgnoreCase("@PID.13.8")) {
-                if (phone == null) phone = new PhoneNumber(SharedEnums.PhoneType.HOME);
-                phone.setExtension( value );
-            }
-            else if (key.equalsIgnoreCase("@PID.13.9")) {
-                if (phone == null) phone = new PhoneNumber(SharedEnums.PhoneType.HOME);
-                phone.setNote( value );
+                phone = initPhone(phone, SharedEnums.PhoneType.WORK);
+                phone.setCountryCode(value);
+            } else if (key.equalsIgnoreCase("@PID.14.6")) {
+                phone = initPhone(phone, SharedEnums.PhoneType.WORK);
+                phone.setAreaCode(value);
+            } else if (key.equalsIgnoreCase("@PID.14.1")) {
+                phone = initPhone(phone, SharedEnums.PhoneType.WORK);
+                phone.setNumber(value);
+            } else if (key.equalsIgnoreCase("@PID.14.8")) {
+                phone = initPhone(phone, SharedEnums.PhoneType.WORK);
+                phone.setExtension(value);
+            } else if (key.equalsIgnoreCase("@PID.14.9")) {
+                phone = initPhone(phone, SharedEnums.PhoneType.WORK);
+                phone.setNote(value);
+            } else if (key.equalsIgnoreCase("@PID.13.5")) {
+                phone = initPhone(phone, SharedEnums.PhoneType.HOME);
+                phone.setCountryCode(value);
+            } else if (key.equalsIgnoreCase("@PID.13.6")) {
+                phone = initPhone(phone, SharedEnums.PhoneType.HOME);
+                phone.setAreaCode(value);
+            } else if (key.equalsIgnoreCase("@PID.13.1")) {
+                phone = initPhone(phone, SharedEnums.PhoneType.HOME);
+                phone.setNumber(value);
+            } else if (key.equalsIgnoreCase("@PID.13.8")) {
+                phone = initPhone(phone, SharedEnums.PhoneType.HOME);
+                phone.setExtension(value);
+            } else if (key.equalsIgnoreCase("@PID.13.9")) {
+                phone = initPhone(phone, SharedEnums.PhoneType.HOME);
+                phone.setNote(value);
             }
             // PID-18 - Patient Account Number
             else if (key.equalsIgnoreCase("@PID.18.1")) {
-            	if (patientAccountNumber==null) patientAccountNumber = new PatientIdentifier();
+            	patientAccountNumber = initIdentifier(patientAccountNumber);
             	patientAccountNumber.setId(value);
-            }
-            else if(key.equalsIgnoreCase("@PID.18.4")) {
-            	if (patientAccountNumber==null) patientAccountNumber = new PatientIdentifier();
-            	patientAccountNumber.setAssigningAuthority(new Identifier(value,null,null));
-            }
-            else if(key.equalsIgnoreCase("@PID.18.4.1")) {
-            	if (patientAccountNumber==null) patientAccountNumber = new PatientIdentifier();
-            	Identifier aa = patientAccountNumber.getAssigningAuthority();
-            	if (aa == null) {
-            		aa = new Identifier(value, null, null);
-            	} else {
-            		aa.setNamespaceId(value);
-            	}
+            } else if (key.equalsIgnoreCase("@PID.18.4") || key.equalsIgnoreCase("@PID.18.4.1")) {
+                patientAccountNumber = initIdentifier(patientAccountNumber);
+            	final Identifier aa = initId(patientAccountNumber.getAssigningAuthority());
+            	aa.setNamespaceId(value);
             	patientAccountNumber.setAssigningAuthority(aa);
-            }
-            else if(key.equalsIgnoreCase("@PID.18.4.2")) {
-            	if (patientAccountNumber==null) patientAccountNumber = new PatientIdentifier();
-            	Identifier aa = patientAccountNumber.getAssigningAuthority();
-            	if (aa == null) {
-            		aa = new Identifier(null, value, null);
-            	} else {
-            		aa.setUniversalId(value);
-            	}
+            } else if (key.equalsIgnoreCase("@PID.18.4.2")) {
+                patientAccountNumber = initIdentifier(patientAccountNumber);
+            	final Identifier aa = initId(patientAccountNumber.getAssigningAuthority());
+            	aa.setUniversalId(value);
             	patientAccountNumber.setAssigningAuthority(aa);
-            }
-            else if(key.equalsIgnoreCase("@PID.18.4.3")) {
-            	if (patientAccountNumber==null) patientAccountNumber = new PatientIdentifier();
-            	Identifier aa = patientAccountNumber.getAssigningAuthority();
-            	if (aa == null) {
-            		aa = new Identifier(null, null, value);
-            	} else {
-            		aa.setUniversalIdType(value);
-            	}
+            } else if (key.equalsIgnoreCase("@PID.18.4.3")) {
+                patientAccountNumber = initIdentifier(patientAccountNumber);
+            	final Identifier aa = initId(patientAccountNumber.getAssigningAuthority());
+            	aa.setUniversalIdType(value);
             	patientAccountNumber.setAssigningAuthority(aa);
-            }
-            else if(key.equalsIgnoreCase("@PID.18.5")) {
-            	if (patientAccountNumber==null) patientAccountNumber = new PatientIdentifier();
+            } else if (key.equalsIgnoreCase("@PID.18.5")) {
+                patientAccountNumber = initIdentifier(patientAccountNumber);
             	patientAccountNumber.setIdentifierTypeCode(value);
+            } else if (key.equalsIgnoreCase("@PID.18.6")) {
+                patientAccountNumber = initIdentifier(patientAccountNumber);
+            	patientAccountNumber.setAssigningFacility(new Identifier(value, null, null));
             }
-            else if(key.equalsIgnoreCase("@PID.18.6")) {
-            	if (patientAccountNumber==null) patientAccountNumber = new PatientIdentifier();
-            	patientAccountNumber.setAssigningFacility(new Identifier(value,null,null));
-            }
-            //PID-19 SSN
+            // PID-19 SSN
             else if (key.equalsIgnoreCase("@PID.19")) {
-                ret.setSsn( value );
+                ret.setSsn(value);
             }
-            //PID-20 Driver's License
+            // PID-20 Driver's License
             else if (key.equalsIgnoreCase("@PID.20") || key.equalsIgnoreCase("@PID.20.1")) {
-            	if (driversLicense==null) driversLicense = new DriversLicense();
+            	if (driversLicense == null) driversLicense = new DriversLicense();
             	driversLicense.setLicenseNumber(value);
-            }else if (key.equalsIgnoreCase("@PID.20.2")){
-            	if (driversLicense==null) driversLicense = new DriversLicense();
+            } else if (key.equalsIgnoreCase("@PID.20.2")) {
+            	if (driversLicense == null) driversLicense = new DriversLicense();
             	driversLicense.setIssuingState(value);                            	
-            }else if(key.equalsIgnoreCase("@PID.20.3")){
+            } else if(key.equalsIgnoreCase("@PID.20.3")) {
             	try {
                     String birthdateFormat = HL7v25.birhtdateFormat;
                     Calendar birthdate = DateUtil.parseCalendar(value, birthdateFormat);
-                	if (driversLicense==null) driversLicense = new DriversLicense();
+                	if (driversLicense == null) driversLicense = new DriversLicense();
                 	driversLicense.setExpirationDate(birthdate);                    
-                } catch (ParseException e) {
+                } catch (final ParseException e) {
                     throw new PixPdqException(e);
                 }
             }
             
         } //end for
-        if(patientIdentifier != null) ret.setPatientIdentifier(patientIdentifier);
-        if(patientAccountNumber != null) ret.setPatientAccountNumber(patientAccountNumber);
-        if(personName != null ) ret.setPersonName(personName);
-        if(maidenName != null ) ret.setMotherMaidenName(maidenName);
-        if (address != null) ret.setAddress( address );
-        if (phone != null) ret.setPhone( phone );
-        if(driversLicense != null ) ret.setDriversLicense(driversLicense);       
+        ret.setPatientIdentifier(patientIdentifier);
+        ret.setPatientAccountNumber(patientAccountNumber);
+        ret.setPersonName(personName);
+        ret.setMotherMaidenName(maidenName);
+        ret.setAddress(address);
+        ret.setPhone(phone);
+        ret.setDriversLicense(driversLicense);       
         return ret;
+    }
+    
+    private final static PatientIdentifier initIdentifier(final PatientIdentifier id) {
+        return (id == null) ? new PatientIdentifier() : id;
+    }
+    
+    private final static Identifier initId(final Identifier id) {
+        return (id == null) ? new Identifier(null, null, null) : id;
+    }
+    
+    private final static PersonName initName(final PersonName name) {
+        return (name == null) ? new PersonName() : name;
+    }
+    
+    private final static Address initAddress(final Address a) {
+        return (a == null) ? new Address() : a;
+    }
+    
+    private final static PhoneNumber initPhone(final PhoneNumber pn, SharedEnums.PhoneType type) {
+        return (pn == null) ? new PhoneNumber(type) : pn;
     }
 
    /**

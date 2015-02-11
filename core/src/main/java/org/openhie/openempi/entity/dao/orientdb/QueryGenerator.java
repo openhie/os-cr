@@ -24,11 +24,13 @@ import java.util.Map;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.openhealthtools.openpixpdq.impl.v2.ImpreciseCalendar;
 import org.openhie.openempi.entity.Constants;
 import org.openhie.openempi.model.AttributeDatatype;
 import org.openhie.openempi.model.Entity;
 import org.openhie.openempi.model.EntityAttribute;
 import org.openhie.openempi.model.Identifier;
+import org.openhie.openempi.model.ImpreciseDate;
 import org.openhie.openempi.model.LinkSource;
 import org.openhie.openempi.model.Record;
 import org.openhie.openempi.model.RecordLinkState;
@@ -63,7 +65,7 @@ public class QueryGenerator
 		return query.toString();
 	}	
 	
-	public static String generateQueryFromRecord(Entity entity, Record record,  Map<String, Object> params, int firstResult, int maxResults) {
+	public static String generateQueryFromRecord(Entity entity, Record record, Map<String, Object> params, int firstResult, int maxResults) {
 		StringBuffer query = new StringBuffer("select from " + entity.getName() + " where dateVoided is null");
 		
 		for (String property : record.getPropertyNames()) {
@@ -339,54 +341,56 @@ public class QueryGenerator
 
 	private static void addCriterionToQuery(EntityAttribute attrib, Object value, StringBuffer query, Map<String, Object> params) {
 		query.append(" and ");
-		switch(AttributeDatatype.getById(attrib.getDatatype().getDatatypeCd())) {
+		final AttributeDatatype type = AttributeDatatype.getById(attrib.getDatatype().getDatatypeCd().intValue());
+		final String name = attrib.getName();
+		switch (type) {
 			case BOOLEAN:
 			case INTEGER:
 			case LONG:
 			case SHORT:
 			case DOUBLE:
 			case FLOAT:
-				query.append(attrib.getName())
-				    .append(" ")
-					.append("=")
-					.append(" ")
-					.append(":").append((attrib.getName()));
-                    params.put(attrib.getName(), value);
+				query.append(name).append(" = :").append(name);
+                params.put(name, value);
 				break;
 			case DATE:
-				query.append("format(")
-					.append(DATE_FORMAT_STRING)
-					.append(",").append(attrib.getName()).append(") ")
-					.append(chooseWhereClauseOperator(value))
-					.append(" ")
-					.append(":").append((attrib.getName()));
-                    params.put(attrib.getName(), value);
+			case TIMESTAMP:
+			    final String fs = (type == AttributeDatatype.DATE) ? DATE_FORMAT_STRING : DATETIME_FORMAT_STRING;
+			    if (value instanceof ImpreciseDate) {
+			        addDateCriterionToQuery(name, value, query, params, fs, ">=");
+			        final ImpreciseCalendar c = ((ImpreciseDate) value).getCalendar();
+			        final int p = c.getPrecision(), field;
+			        if (p == 4) {
+			            field = ImpreciseCalendar.YEAR;
+			        } else if (p == 6) {
+			            field = ImpreciseCalendar.MONTH;
+			        } else {
+			            throw new IllegalArgumentException("Unexpected precision " + p);
+			        }
+			        c.add(field, 1);
+			        addDateCriterionToQuery(name, c.getTime(), query, params, fs, "<");
+			        c.add(field, -1);
+			    } else {
+			        addDateCriterionToQuery(name, value, query, params, fs, chooseWhereClauseOperator(value));
+			    }
 				break;
 			case STRING:
-				query.append(attrib.getName())
-					.append(" ")
-					.append(chooseWhereClauseOperator(value))
-					.append(" ")
-					.append(":").append((attrib.getName()));
-                    params.put(attrib.getName(), (String)value);
-				break;
-			case TIMESTAMP:
-				query.append("format(")
-				.append(DATETIME_FORMAT_STRING)
-				.append(",").append(attrib.getName()).append(") ")
-				.append(chooseWhereClauseOperator(value))
-				.append(" ")
-				.append(":").append((attrib.getName()));
-                params.put(attrib.getName(), value);
+				query.append(name).append(" ").append(chooseWhereClauseOperator(value)).append(" :").append(name);
+                params.put(name, value);
 				break;
 		}
 	}
+	
+	private static void addDateCriterionToQuery(final String name, final Object value, final StringBuffer query, final Map<String, Object> params, final String fs, final String op) {
+	    query.append("format(").append(fs).append(",").append(name).append(") ").append(op).append(" :").append(name);
+        params.put(name, value);
+	}
 
-	private static Object chooseWhereClauseOperator(Object value) {
-		String strValue = value.toString();
+	private static String chooseWhereClauseOperator(final Object value) {
+		final String strValue = value.toString();
 		if (strValue.indexOf('%') >= 0 || strValue.indexOf('_') >= 0) {
 			return "like";
 		}
-		return '=';
+		return "=";
 	}
 }

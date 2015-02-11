@@ -34,9 +34,11 @@ import org.openhealthtools.openexchange.datamodel.PersonName;
 import org.openhealthtools.openexchange.datamodel.PhoneNumber;
 import org.openhealthtools.openexchange.datamodel.SharedEnums.SexType;
 import org.openhealthtools.openpixpdq.api.PdqQuery;
+import org.openhealthtools.openpixpdq.impl.v2.ImpreciseCalendar;
 import org.openhie.openempi.model.EthnicGroup;
 import org.openhie.openempi.model.Gender;
 import org.openhie.openempi.model.IdentifierDomain;
+import org.openhie.openempi.model.ImpreciseDate;
 import org.openhie.openempi.model.NameType;
 import org.openhie.openempi.model.Nationality;
 import org.openhie.openempi.model.Person;
@@ -91,36 +93,36 @@ public class ConversionHelper
 		openempiToPixPdqRaceCodeMap.put(OPENEMPI_RACE_SPANISH_AMERICAN_INDIAN, PIXPDQ_RACE_CODE_HISPANIC);
 	}
 	
-	public static Person getPerson(PdqQuery query) {
-		Person person = new Person();
+	public static Person getPerson(final PdqQuery query) {
+		final Person person = new Person();
 		if (query.getPersonName() != null) {
 			populatePersonName(person, query);
 		}
-		if (query.getSsn() != null ) {
+		if (query.getSsn() != null) {
 			person.setSsn(query.getSsn());
 		}
 		if (query.getSex() != null) {
-			Gender gender = new Gender();
+			final Gender gender = new Gender();
 			gender.setGenderCode(query.getSex().getCDAValue());
 			person.setGender(gender);
 		}
 		person.setDateOfBirth(toDate(query.getBirthDate()));
-		if (query.getAddress() != null ) {
+		if (query.getAddress() != null) {
 			populateAddress(person, query.getAddress());
 		}
-		if(query.getPhone() != null) {
+		if (query.getPhone() != null) {
 			populatePhone(person, query.getPhone());
 		}
 		if (query.getPatientIdentifier() != null) {
 			person.addPersonIdentifier(getPersonIdentifier(query.getPatientIdentifier(), query));
 		}
 		if (query.getPatientAccountNumber() != null) {
-			PatientIdentifier account = query.getPatientAccountNumber();
+			final PatientIdentifier account = query.getPatientAccountNumber();
 			if (account.getId() != null) {
 				person.setAccount(handlePrefixSuffix(query, account.getId()));
 			}
 			if (account.getAssigningAuthority() != null) {
-				IdentifierDomain id = new IdentifierDomain();
+			    final IdentifierDomain id = new IdentifierDomain();
 				id.setNamespaceIdentifier(handlePrefixSuffix(query, account.getAssigningAuthority().getNamespaceId()));
 				id.setUniversalIdentifier(handlePrefixSuffix(query, account.getAssigningAuthority().getUniversalId()));
 				id.setUniversalIdentifierTypeCode(handlePrefixSuffix(query,account.getAssigningAuthority().getUniversalIdType()));
@@ -294,7 +296,12 @@ public class ConversionHelper
 	}
 	
 	private static Date toDate(final Calendar c) {
-	    return (c == null) ? null : c.getTime();
+	    if (c == null) {
+	        return null;
+	    } else if (c instanceof ImpreciseCalendar) {
+	        return new ImpreciseDate((ImpreciseCalendar) c);
+	    }
+	    return c.getTime();
 	}
 
 	private static String getOpenEmpiRaceCode(String race) {
