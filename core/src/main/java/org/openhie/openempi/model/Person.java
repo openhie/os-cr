@@ -403,7 +403,7 @@ public class Person extends BaseObject implements java.io.Serializable
         } else {
             final Language language = new Language();
             language.setLanguageCode(primaryLanguage);
-            person.setLanguage(language);
+            setLanguage(language);
         }
 	}
 
