@@ -74,6 +74,7 @@ import org.openhie.openempi.model.ExtendedCriterion;
 import org.openhie.openempi.model.Gender;
 import org.openhie.openempi.model.Identifier;
 import org.openhie.openempi.model.IdentifierDomain;
+import org.openhie.openempi.model.ImpreciseDate;
 import org.openhie.openempi.model.LabelValue;
 import org.openhie.openempi.model.Language;
 import org.openhie.openempi.model.LinkSource;
@@ -829,50 +830,53 @@ public final class ConvertUtil
         return record;
     }
 
-	public static String dateToString(Date date)
-	{
-		if (date == null) {
-			return "";
-		}
-		return dateFormat.format(date);
+	public static String dateToString(final Date date) {
+		return toString(date, dateFormat);
 	}
 
-	public static String dateTimeToString(Date date)
-	{
-		if (date == null) {
-			return "";
-		}
-		return dateTimeFormat.format(date);
+	public static String dateTimeToString(final Date date) {
+		return toString(date, dateTimeFormat);
 	}
-
-    public static Date stringToDate(String strDate) {
-        Date date = null;
-        if (strDate == null || strDate.isEmpty()) {
-            return date;
+	
+	private final static String toString(final Date date, final DateFormat format) {
+        if (date == null) {
+            return "";
         }
-        try {
-            date = dateFormat.parse(strDate);
-        } catch (ParseException e) {
-            if (log.isDebugEnabled()) {
-                log.debug("Unable to parse string to date: " + strDate);
+        final String s = format.format(date);
+        if (date instanceof ImpreciseDate) {
+            final int pre = ((ImpreciseDate) date).getCalendar().getPrecision(), end;
+            if (pre == 4) {
+                end = 4;
+            } else if (pre == 6) {
+                end = 7; // Format is yyyy-MM-dd, so account for the "-" in yyyy-MM
+            } else {
+                throw new IllegalArgumentException("Unexpected precision " + pre);
             }
+            return s.substring(0, end);
         }
-        return date;
+        return s;
     }
 
-    public static Date stringToDateTime(String strDate) {
-        Date date = null;
+    public static Date stringToDate(final String strDate) {
+        return toDate(strDate, dateFormat);
+    }
+
+    public static Date stringToDateTime(final String strDate) {
+        return toDate(strDate, dateTimeFormat);
+    }
+    
+    private final static Date toDate(final String strDate, final DateFormat format) {
         if (strDate == null || strDate.isEmpty()) {
-            return date;
+            return null;
         }
         try {
-            date = dateTimeFormat.parse(strDate);
-        } catch (ParseException e) {
+            return format.parse(strDate);
+        } catch (final ParseException e) {
             if (log.isDebugEnabled()) {
                 log.debug("Unable to parse string to date: " + strDate);
             }
         }
-        return date;
+        return null;
     }
 
 	public static RecordLink createRecordLinkFromRecordPair(RecordPair pair) {

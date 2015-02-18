@@ -79,8 +79,8 @@ public class PdqSupplierAdapter extends BasePixPdqAdapter implements IPdSupplier
 				allPatients.add(patients);
 			}
 			return new PdqResult(allPatients);
-		} catch (Exception e) {
-			log.error(e.getMessage());
+		} catch (final Exception e) {
+			log.error(e);
 			throw new PdSupplierException(e);
 		}
 	}

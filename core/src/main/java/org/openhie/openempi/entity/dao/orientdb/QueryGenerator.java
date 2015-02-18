@@ -20,6 +20,7 @@
  */
 package org.openhie.openempi.entity.dao.orientdb;
 
+import java.util.Calendar;
 import java.util.Map;
 import java.util.List;
 
@@ -355,9 +356,10 @@ public class QueryGenerator
 				break;
 			case DATE:
 			case TIMESTAMP:
-			    final String fs = (type == AttributeDatatype.DATE) ? DATE_FORMAT_STRING : DATETIME_FORMAT_STRING;
+			    String fs = (type == AttributeDatatype.DATE) ? DATE_FORMAT_STRING : DATETIME_FORMAT_STRING;
 			    if (value instanceof ImpreciseDate) {
-			        addDateCriterionToQuery(name, value, query, params, fs, ">=");
+			        addDateCriterionToQuery(name, name + "Start", value, query, params, fs, ">=");
+			        query.append(" and ");
 			        final ImpreciseCalendar c = ((ImpreciseDate) value).getCalendar();
 			        final int p = c.getPrecision(), field;
 			        if (p == 4) {
@@ -368,10 +370,36 @@ public class QueryGenerator
 			            throw new IllegalArgumentException("Unexpected precision " + p);
 			        }
 			        c.add(field, 1);
-			        addDateCriterionToQuery(name, c.getTime(), query, params, fs, "<");
+			        addDateCriterionToQuery(name, name + "End", c.getTime(), query, params, fs, "<");
 			        c.add(field, -1);
 			    } else {
-			        addDateCriterionToQuery(name, value, query, params, fs, chooseWhereClauseOperator(value));
+			        final String s = value.toString(), suffix;
+			        final int len = s.length(), field;
+			        if (len == 4) {
+			            suffix = "-01-01";
+			            field = ImpreciseCalendar.YEAR;
+			        } else if (len == 7) {
+			            suffix = "-01";
+			            field = ImpreciseCalendar.MONTH;
+			        } else {
+			            suffix = null;
+			            field = -1;
+			        }
+			        if (suffix != null) {
+			            fs = DATE_FORMAT_STRING;
+			            final String full = s + suffix;
+			            addDateCriterionToQuery(name, name + "Start", full, query, params, fs, ">=");
+			            query.append(" and ");
+			            final Calendar c = Calendar.getInstance();
+			            c.set(Calendar.YEAR, parseInt(full, 0, 4));
+			            c.set(Calendar.MONTH, parseInt(full, 5, 7) - 1);
+			            c.set(Calendar.DATE, parseInt(full, 8, 10));
+			            c.add(field, 1);
+			            final String end = "" + c.get(Calendar.YEAR) + "-" + to2Digit(c.get(Calendar.MONTH) + 1) + "-" + to2Digit(c.get(Calendar.DATE));
+			            addDateCriterionToQuery(name, name + "End", end, query, params, fs, "<");
+			        } else {
+			            addDateCriterionToQuery(name, name, value, query, params, fs, chooseWhereClauseOperator(value));
+			        }
 			    }
 				break;
 			case STRING:
@@ -381,9 +409,21 @@ public class QueryGenerator
 		}
 	}
 	
-	private static void addDateCriterionToQuery(final String name, final Object value, final StringBuffer query, final Map<String, Object> params, final String fs, final String op) {
-	    query.append("format(").append(fs).append(",").append(name).append(") ").append(op).append(" :").append(name);
-        params.put(name, value);
+	private final static int parseInt(final String s, final int start, final int end) {
+	    int n = 0;
+	    for (int i = start; i < end; i++) {
+	        n = (n * 10) + (s.charAt(i) - '0');
+	    }
+	    return n;
+	}
+	
+	private final static String to2Digit(final int i) {
+	    return (i < 10) ? ("0" + i) : Integer.toString(i);
+	}
+	
+	private static void addDateCriterionToQuery(final String name, final String pName, final Object value, final StringBuffer query, final Map<String, Object> params, final String fs, final String op) {
+	    query.append("format(").append(fs).append(",").append(name).append(") ").append(op).append(" :").append(pName);
+        params.put(pName, value);
 	}
 
 	private static String chooseWhereClauseOperator(final Object value) {
