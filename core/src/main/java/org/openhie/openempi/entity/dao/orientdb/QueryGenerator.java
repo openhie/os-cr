@@ -128,7 +128,7 @@ public class QueryGenerator
 
 	public static String generateQueryForRecordLinks(Entity entity, String recordId) {
 	    // select from (traverse bothe() from 11:3077) where source = 3 and @class = 'recordLink';
-		StringBuffer query = new StringBuffer("select from (traverse bothe() from ");
+		StringBuffer query = new StringBuffer("select from (traverse * from ");
         query.append(recordId)
             .append(") where @class = '")
             .append(Constants.RECORD_LINK_TYPE)
@@ -137,7 +137,7 @@ public class QueryGenerator
 	}
 
 	public static String generateQueryForRecordLinks(Entity entity, String recordId, RecordLinkState state) {
-        StringBuffer query = new StringBuffer("select from (traverse bothe() from ");
+        StringBuffer query = new StringBuffer("select from (traverse * from ");
         query.append(recordId)
             .append(") where @class = '")
             .append(Constants.RECORD_LINK_TYPE)
@@ -303,9 +303,6 @@ public class QueryGenerator
 		return query.toString();
 	}
 
-	// TODO:  select  from person let $id = out_identifierEdge where set($id.identifierDomainId) not contains 9991;
-	// TODO:  select  from person let $id = out_identifierEdge where set($id.identifierDomainId) not contains 9990;
-	// Need to fix this since the identifers are no longer a 
     public static String generateRecordQueryNotInIdentifierDomain(Entity entity, Integer identifierDomainId,
             boolean hasLinks, Map<String, Object> params, int firstResult, int maxResults) {
         StringBuffer query = new StringBuffer("select from ");
@@ -314,12 +311,9 @@ public class QueryGenerator
             .append(" where dateVoided is null ");
         if (identifierDomainId != null ) {
             query
-                .append(" and (identifierSet.size() = 0 or set($id.identifierDomainId) not contains (")
-                .append(Constants.IDENTIFIER_DOMAIN_ID_PROPERTY)
-                .append(" = :")
-                .append(Constants.IDENTIFIER_DOMAIN_ID_PROPERTY)
-                .append(") = 0 ) ");
-            params.put(Constants.IDENTIFIER_DOMAIN_ID_PROPERTY, identifierDomainId);
+                .append(" and ($id.size() = 0 or $id.in.identifierDomainId not contains ")
+                .append(identifierDomainId)
+                .append(") ");
         }
 
         if (hasLinks) {
