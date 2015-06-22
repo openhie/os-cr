@@ -883,7 +883,14 @@ public class Person extends BaseObject implements java.io.Serializable
 	}
 
 	public void setPersonIdentifiers(Set<PersonIdentifier> personIdentifiers) {
-		this.personIdentifiers = personIdentifiers;
+		//this.personIdentifiers = personIdentifiers;
+	    this.personIdentifiers.clear();
+	    if (personIdentifiers == null) {
+	        return;
+	    }
+	    for (final PersonIdentifier personIdentifier : personIdentifiers) {
+	        addPersonIdentifier(personIdentifier);
+	    }
 	}	
 
 	public void addPersonIdentifier(PersonIdentifier personIdentifier) {
