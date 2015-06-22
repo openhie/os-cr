@@ -258,13 +258,23 @@ public class OrientdbConverter
 
     public static Set<Vertex> extractRecordsFromIdentifiers(Entity entityDef, Iterable<Vertex> idVertices) {
         Set<Vertex> recVertices = new HashSet<Vertex>();
-        for (Vertex v : idVertices) {
-            OrientElementIterable<Edge> edges = v.getProperty("in_identifierEdge");
-            for (Edge edge : edges) {
-                Vertex record = edge.getVertex(Direction.OUT);
-                log.debug("Found record: " + record);
-                if (record.getProperty(Constants.DATE_VOIDED_PROPERTY) == null) { // && entityVersionId == id.intValue()) {
-                    recVertices.add(record);
+        if (idVertices != null) {
+            for (Vertex v : idVertices) {
+                final Object prop = v.getProperty("in_identifierEdge");
+                if (prop instanceof Vertex) {
+                    recVertices.add((Vertex) prop);
+                } else if (prop instanceof OrientElementIterable) {
+                    OrientElementIterable<Edge> edges = (OrientElementIterable<Edge>) prop;
+                    for (Edge edge : edges) {
+                        Vertex record = edge.getVertex(Direction.OUT);
+                        log.debug("Found record: " + record);
+                        if (record.getProperty(Constants.DATE_VOIDED_PROPERTY) == null) { // && entityVersionId == id.intValue()) {
+                            recVertices.add(record);
+                        }
+                    }
+                    //edges.close(); // Warning that we don't do this. Should we?
+                } else if (prop != null) {
+                    log.warn("Unexpected in_identifierEdge type " + prop.getClass());
                 }
             }
         }
